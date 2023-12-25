@@ -1,0 +1,14 @@
+services:
+  db:
+   container_name: "alpha_bookstore_database"
+   image: mysql
+   ports:
+    - "${DB_PORT}:3306"
+   environment:
+     MYSQL_ROOT_PASSWORD: "${DB_PASSWORD}"
+     MYSQL_DATABASE: "${DB_DATABASE}"
+   volumes:
+     - local_mysql:/var/lib/mysql
+
+volumes:
+  local_mysql:
