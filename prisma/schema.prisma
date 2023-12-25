@@ -6,3 +6,271 @@ datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
+
+model Countries {
+  //Fields
+  id   Int    @id @unique @default(autoincrement())
+  name String @unique
+
+  //Foreign keys
+  language_code String
+
+  //Relations
+  language Languages @relation("country_predominant_language", fields: [language_code], references: [language_code])
+  authors  Authors[] @relation("author_nationality")
+  users    Users[]   @relation("user_nationality")
+
+  //Timestamps
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  finished_at DateTime?
+
+  @@map("countries")
+}
+
+model Languages {
+  //Fields
+  id            Int    @id @unique @default(autoincrement())
+  name          String
+  language_code String @unique
+
+  //Foreign Keys
+
+  //Relations
+  books     Books[]     @relation("book_language")
+  countries Countries[] @relation("country_predominant_language")
+
+  //Timestamps
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  finished_at DateTime?
+
+  @@map("languages")
+}
+
+// * User related models
+model Users {
+  //Fields
+  id       Int     @id @unique @default(autoincrement())
+  name     String?
+  surname  String?
+  username String  @unique
+  email    String  @unique
+  password String
+
+  //Foreign keys
+  country_name String
+
+  //Relations
+  nationality Countries @relation("user_nationality", fields: [country_name], references: [name])
+  reviews     Reviews[] @relation("user_reviews")
+
+  //Timestamps
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  finished_at DateTime?
+
+  @@map("users")
+}
+
+model Reviews {
+  //Fields
+  id            Int    @id @unique @default(autoincrement())
+  title         String
+  review        String
+  review_book_rating Float  @default(0)
+  review_helpness_rating Float  @default(0)
+
+  //Foreign keys
+  user_id Int
+  book_id Int
+
+  //Relations
+  user Users @relation("user_reviews", fields: [user_id], references: [id])
+  book Books @relation("book_reviews", fields: [book_id], references: [id])
+
+  //Timestamps
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  finished_at DateTime?
+
+  @@map("reviews")
+}
+
+// * Author related models
+model Authors {
+  //Fields
+  id          Int       @id @unique @default(autoincrement())
+  image_url   String?
+  name        String
+  surname     String?
+  description Float?
+  birthday    DateTime?
+  deathDate   DateTime?
+  rating      Float     @default(0)
+
+  //Foreign keys
+  country_name String
+
+  //Relations
+  nationality Countries @relation("author_nationality", fields: [country_name], references: [name])
+  books       Books[]   @relation("author_books")
+  prizes      Prizes[]  @relation("author_prizes")
+
+  //Timestamps
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  finished_at DateTime?
+
+  @@map("authors")
+}
+
+model Prizes {
+  //Fields
+  id          Int       @id @unique @default(autoincrement())
+  title       String
+  description String?
+  awarded_at    DateTime?
+
+  // Foreign keys
+  author_id Int
+
+  //Relations
+  author Authors @relation("author_prizes", fields: [author_id], references: [id])
+
+  //Timestamps
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  finished_at DateTime?
+
+  @@map("prizes")
+}
+
+// * Book related models
+model Books {
+  //Fields
+  id           Int       @id @unique @default(autoincrement())
+  code         String    @unique
+  title        String
+  description  String
+  price        Float
+  rating       Float     @default(0)
+  release_date DateTime?
+
+  // Foreign keys
+  author_id     Int
+  translator_id Int
+  publisher_id  Int
+  language_id   Int
+  category_name String
+
+  //Relations
+  author     Authors       @relation("author_books", fields: [author_id], references: [id])
+  translator Translators   @relation("book_translator", fields: [translator_id], references: [id])
+  publisher  Publishers    @relation("book_publisher", fields: [publisher_id], references: [id])
+  language   Languages     @relation("book_language", fields: [language_id], references: [id])
+  category   Categories    @relation("book_category", fields: [category_name], references: [name])
+  images     Book_Images[] @relation("book_images")
+  offers     Offers[]      @relation("book_offers")
+  reviews    Reviews[]     @relation("book_reviews")
+
+  //Timestamps
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  finished_at DateTime?
+
+  @@map("books")
+}
+
+model Book_Images {
+  //Fields
+  id  Int    @id @unique @default(autoincrement())
+  url String @unique
+
+  // Foreign keys
+
+  //Relations
+  book Books[] @relation("book_images")
+
+  //Timestamps
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  finished_at DateTime?
+
+  @@map("book_images")
+}
+
+model Categories {
+  //Fields
+  id   Int    @id @unique @default(autoincrement())
+  name String @unique
+
+  //Foreign Keys
+
+  //Relations
+  books Books[] @relation("book_category")
+
+  //Timestamps
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  finished_at DateTime?
+
+  @@map("categories")
+}
+
+model Translators {
+  //Fields
+  id   Int    @id @unique @default(autoincrement())
+  name String
+
+  //Foreign Keys
+
+  //Relations
+  books Books[] @relation("book_translator")
+
+  //Timestamps
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  finished_at DateTime?
+
+  @@map("translators")
+}
+
+model Publishers {
+  //Fields
+  id          Int    @id @unique @default(autoincrement())
+  name        String
+  description String
+  rating      Float  @default(0)
+
+  //Foreign Keys
+
+  //Relations
+  books Books[] @relation("book_publisher")
+
+  //Timestamps
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  finished_at DateTime?
+
+  @@map("publishers")
+}
+
+model Offers {
+  //Fields
+  id         Int   @id @unique @default(autoincrement())
+  percentage Float
+
+  //Foreign Keys
+  book_id Int
+
+  //Relations
+  book Books @relation("book_offers", fields: [book_id], references: [id])
+
+  //Timestamps
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  finished_at DateTime?
+
+  @@map("offers")
+}
